@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试学习进度记录</title>
+    <style>
+        *{box-sizing:border-box;font-family:system-ui}
+        body{max-width:700px;margin:40px auto;padding:0 20px;}
+        .item{display:flex;align-items:center;gap:10px;margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px}
+        .done{background:#f0fdf4;border-color:#86efac}
+        input[type="text"]{flex:1;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:16px}
+        button{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:14px}
+        .add{background:#2563eb;color:white}
+        .del{background:#ef4444;color:white}
+        .progress{width:80px}
+        .header{margin-bottom:24px}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 考试学习进度</h1>
+        <div style="display:flex;gap:8px;margin-top:10px">
+            <input id="taskInput" placeholder="输入知识点/科目，例如：FRM 定量分析">
+            <button class="add" onclick="addTask()">添加任务</button>
+        </div>
+    </div>
+    <div id="taskList"></div>
+
+<script>
+// 读取本地存储
+let taskList = JSON.parse(localStorage.getItem("studyTasks")) || [];
+
+// 渲染页面
+function render(){
+    const wrap = document.getElementById("taskList");
+    wrap.innerHTML = "";
+    taskList.forEach((item,idx)=>{
+        const div = document.createElement("div");
+        div.className = item.finish ? "item done" : "item";
+        div.innerHTML = `
+            <input type="checkbox" ${item.finish?"checked":""} onchange="toggleCheck(${idx})">
+            <input type="text" value="${item.name}" onchange="rename(${idx},this.value)">
+            <input class="progress" type="number" min="0" max="100" value="${item.percent}" onchange="setPercent(${idx},this.value)">
+            <span>%</span>
+            <button class="del" onclick="del(${idx})">删除</button>
+        `
+        wrap.appendChild(div);
+    })
+    save();
+}
+
+// 保存到localStorage
+function save(){
+    localStorage.setItem("studyTasks",JSON.stringify(taskList));
+}
+
+function addTask(){
+    const name = document.getElementById("taskInput").value.trim();
+    if(!name)return;
+    taskList.push({name, finish:false, percent:0});
+    document.getElementById("taskInput").value = "";
+    render();
+}
+function toggleCheck(i){taskList[i].finish = !taskList[i].finish;render()}
+function rename(i,val){taskList[i].name = val;render()}
+function setPercent(i,val){taskList[i].percent = Number(val);render()}
+function del(i){taskList.splice(i,1);render()}
+
+render();
+</script>
+</body>
+</html>
